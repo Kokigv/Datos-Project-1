@@ -2,26 +2,28 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
 public class Tablero {
 
     JFrame window;
-    DotLinkedList dotList;
+    LinkedList dotList;
+    LinkedList lineList;
+    LinkedList squareList;
     DotPanel dotPanel;
-    LineLinkedList lineList;
-     SquareLinkedList squareList;
-
+    
     Tablero() {
-        window = new JFrame();
+        window = new JFrame("Dots and Boxes");
         window.setSize(1000, 1000);
         window.setLayout(null);
         window.setResizable(false);
         window.setVisible(true);
-        dotList = new DotLinkedList();
+        window.setLocationRelativeTo(null);
+        window.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("Images/iconImage.png")));
+        dotList = new LinkedList();
         dotPanel = new DotPanel(dotList);
-        lineList = new LineLinkedList();
-        squareList = new SquareLinkedList();
+        lineList = new LinkedList();
+        squareList = new LinkedList();
         dotPanel.setSize(1000, 1000);
+        dotPanel.setBackground(Color.white);
         window.add(dotPanel);
         window.add(dotPanel, BorderLayout.CENTER);
 
@@ -35,10 +37,10 @@ public class Tablero {
     }
 
     class DotPanel extends JPanel {
-        private DotLinkedList dotList;
+        private LinkedList dotList;
         private Dot dotSeleccionado1;
 
-        public DotPanel(DotLinkedList dotList) {
+        public DotPanel(LinkedList dotList) {
             this.dotList = dotList;
             addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
@@ -151,7 +153,6 @@ public class Tablero {
     }
 
             Node current = dotList.getHead();
-            g.setColor(java.awt.Color.BLUE);
             while (current != null) {
                 Dot dot = (Dot) current.getData();
                 int x = dot.getX();
@@ -175,6 +176,7 @@ public class Tablero {
         }
     }
 
+    
     class Dot {
         private int x;
         private int y;
@@ -216,11 +218,11 @@ public class Tablero {
     
     }
 
-    class DotLinkedList {
+    class LinkedList {
         private Node head;
         private int size;
     
-        public DotLinkedList() {
+        public LinkedList() {
             this.head = null;
             this.size = 0;
         }
@@ -245,8 +247,8 @@ public class Tablero {
             while (current != null) {
                 Dot dot = (Dot) current.getData();
                 // Comprueba si las coordenadas (x, y) están dentro del rango del Dot
-                if (x >= dot.getX() && x <= dot.getX() + 25 // 5 es el tamaño del Dot en este ejemplo
-                    && y >= dot.getY() && y <= dot.getY() + 25) {
+                if (x >= dot.getX() && x <= dot.getX() + 30 
+                    && y >= dot.getY() && y <= dot.getY() + 30 ) {
                     return dot; // Devuelve el Dot si se encuentra dentro del rango
                 }
                 current = current.getNext();
@@ -290,31 +292,6 @@ public class Tablero {
         }
     }
 
-    class LineLinkedList {
-        private Node head;
-        private int size;
-
-        public LineLinkedList() {
-            this.head = null;
-            this.size = 0;
-        }
-
-
-        public int size() {
-            return this.size;
-        }
-
-        public void insertFirst(Object data) {
-            Node newNode = new Node(data);
-            newNode.setNext(this.head);
-            this.head = newNode;
-            this.size++;
-        }
-
-        public Node getHead() {
-            return this.head;
-        }
-    }
 
     class Square {
         private Dot upperLeft;
@@ -329,7 +306,6 @@ public class Tablero {
             this.lowerRight = lowerRight;
         }
     
-       
         public Dot getUpperLeft() {
             return upperLeft;
         }
@@ -344,32 +320,6 @@ public class Tablero {
     
         public Dot getLowerRight() {
             return lowerRight;
-        }
-    }
-
-    class SquareLinkedList {
-        private Node head;
-        private int size;
-    
-        public SquareLinkedList() {
-            this.head = null;
-            this.size = 0;
-        }
-    
- 
-        public int size() {
-            return this.size;
-        }
-    
-        public void insertFirst(Square square) {
-            Node newNode = new Node(square);
-            newNode.setNext(this.head);
-            this.head = newNode;
-            this.size++;
-        }
-    
-        public Node getHead() {
-            return this.head;
         }
     }
 
