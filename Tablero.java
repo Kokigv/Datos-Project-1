@@ -9,6 +9,8 @@ public class Tablero {
     LinkedList lineList;
     LinkedList squareList;
     DotPanel dotPanel;
+    LinkedList detectedSquares;
+
     
     Tablero() {
         window = new JFrame("Dots and Boxes");
@@ -22,6 +24,7 @@ public class Tablero {
         dotPanel = new DotPanel(dotList);
         lineList = new LinkedList();
         squareList = new LinkedList();
+        detectedSquares = new LinkedList();
         dotPanel.setSize(1000, 1000);
         dotPanel.setBackground(Color.white);
         window.add(dotPanel);
@@ -90,9 +93,8 @@ public class Tablero {
         }
 
         private void checkForSquares() {
-            System.out.println("La función se ejecutó");
             Node current = dotList.getHead();
-    
+        
             while (current != null) {
                 Dot dot = (Dot) current.getData();
                 int x = dot.getX();
@@ -100,20 +102,45 @@ public class Tablero {
                 Dot rightDot = dotList.findDot(x + 100, y);
                 Dot bottomDot = dotList.findDot(x, y + 100);
                 Dot bottomRightDot = dotList.findDot(x + 100, y + 100);
-    
+        
                 if (rightDot != null && bottomDot != null && bottomRightDot != null) {
                     if (lineExists(dot, rightDot) && lineExists(rightDot, bottomRightDot) &&
                         lineExists(bottomRightDot, bottomDot) && lineExists(bottomDot, dot)) {
-                        System.out.println("Cuadrado Hecho");
+
                         Square square = new Square(dot, rightDot, bottomDot, bottomRightDot);
-                        squareList.insertFirst(square);
+
+                        if (!squareExists(square)) {
+                            squareList.insertFirst(square);
+                            detectedSquares.insertFirst(square);
+                            System.out.println(squareList.size());
+                            System.out.println("Cuadrado Hecho");
+                        }
                     }
                 }
-    
                 current = current.getNext();
             }
-    
         }
+
+        private boolean squareExists(Square square) {
+            Node current = detectedSquares.getHead();
+            while (current != null) {
+                Square existingSquare = (Square) current.getData();
+                // Compare squares to check if they are equal
+                if (areSquaresEqual(existingSquare, square)) {
+                    return true; 
+                }
+                current = current.getNext();
+            }
+            return false; 
+        }
+        
+        private boolean areSquaresEqual(Square square1, Square square2) {
+            return (square1.getUpperLeft() == square2.getUpperLeft() &&
+                    square1.getUpperRight() == square2.getUpperRight() &&
+                    square1.getLowerLeft() == square2.getLowerLeft() &&
+                    square1.getLowerRight() == square2.getLowerRight());
+        }
+
         public void mouseClicked(MouseEvent e) {
             int x = e.getX();
             int y = e.getY();
@@ -148,7 +175,7 @@ public class Tablero {
                 Dot upperLeft = square.getUpperLeft();
                 int x1 = upperLeft.getX();
                 int y1 = upperLeft.getY();
-                g.fillRect(x1, y1, 98, 98); // You can adjust the size as needed
+                g.fillRect(x1+3, y1+3, 95, 95); 
             squareCurrent = squareCurrent.getNext();
     }
 
@@ -157,7 +184,7 @@ public class Tablero {
                 Dot dot = (Dot) current.getData();
                 int x = dot.getX();
                 int y = dot.getY();
-                g.fillOval(x, y, 5, 5); // Pinta un círculo (puedes ajustar el tamaño)
+                g.fillOval(x, y, 5, 5); 
                 current = current.getNext();
             }
 

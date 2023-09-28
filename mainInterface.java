@@ -9,12 +9,12 @@ public class mainInterface {
 
     private JFrame mainScreen;
   
-
     public mainInterface() {
         mainScreen = new JFrame("Dots and Boxes");
         mainScreen.setSize(800, 600);
         mainScreen.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainScreen.setLocationRelativeTo(null);
+        mainScreen.setResizable(false);
         mainScreen.setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("Images/iconImage.png")));
 
         JButton playButton = new JButton("Play");
