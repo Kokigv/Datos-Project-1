@@ -2,6 +2,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import org.json.JSONObject;
+import java.net.Socket;
+import java.io.DataOutputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import org.json.JSONException;
 public class Tablero {
 
     JFrame window;
@@ -10,6 +16,27 @@ public class Tablero {
     LinkedList squareList;
     DotPanel dotPanel;
     LinkedList detectedSquares;
+// Dentro de la clase Tablero
+private void Msenvio(Dot p1, Dot p2) {
+    try {
+        JSONObject ObjJason = new JSONObject();
+        ObjJason.put("x1", p1.getX());
+        ObjJason.put("y1", p1.getY());
+        ObjJason.put("x2", p2.getX());
+        ObjJason.put("y2", p2.getY());
+
+        Socket socketclient = new Socket("localhost", 9527);
+        DataOutputStream dos = new DataOutputStream(socketclient.getOutputStream());
+        dos.writeUTF(ObjJason.toString());
+        dos.flush();
+        dos.close();
+        socketclient.close();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+
+
 
     
     Tablero() {
@@ -36,13 +63,15 @@ public class Tablero {
                 dotList.insertFirst(newDot);
             }
         }
+    ClientRunner ClientRunner = new ClientRunner(dotPanel);
+    ClientRunner.start();
     
     }
 
     class DotPanel extends JPanel {
         private LinkedList dotList;
         private Dot dotSeleccionado1;
-
+    
         public DotPanel(LinkedList dotList) {
             this.dotList = dotList;
             addMouseListener(new MouseAdapter() {
@@ -57,6 +86,7 @@ public class Tablero {
                             if (Adjacent(dotSeleccionado1, clickedDot) && !lineExists(dotSeleccionado1, clickedDot)) {
                                 Line line = new Line(dotSeleccionado1, clickedDot);
                                 lineList.insertFirst(line); 
+                                Msenvio(dotSeleccionado1, clickedDot);  // Llamada al método
                                 dotSeleccionado1 = null;
                                 checkForSquares();
                                 repaint(); 
@@ -65,11 +95,11 @@ public class Tablero {
                                 dotSeleccionado1 = null;
                             }
                         }
-                        
                     }
                 }
             });
         }
+        
     
         private boolean Adjacent(Dot dot1, Dot dot2) {
             return Math.abs(dot1.getX() - dot2.getX()) == 100 && dot1.getY() == dot2.getY() ||
@@ -119,6 +149,14 @@ public class Tablero {
                 }
                 current = current.getNext();
             }
+        }
+        public void Conect2(int x1, int y1, int x2, int y2) {
+            // Aquí se debe conectar los puntos basados en las coordenadas. 
+            // Por ahora, asumiré que simplemente deseas agregar una línea entre ellos.
+            Dot dot1 = new Dot(x1, y1);
+            Dot dot2 = new Dot(x2, y2);
+            lineList.insertFirst(new Line(dot1, dot2));
+            repaint();
         }
 
         private boolean squareExists(Square square) {
@@ -199,7 +237,6 @@ public class Tablero {
             lineNode = lineNode.getNext();
         }
 
-        
         }
     }
 
@@ -274,8 +311,8 @@ public class Tablero {
             while (current != null) {
                 Dot dot = (Dot) current.getData();
                 // Comprueba si las coordenadas (x, y) están dentro del rango del Dot
-                if (x >= dot.getX() && x <= dot.getX() + 30 
-                    && y >= dot.getY() && y <= dot.getY() + 30 ) {
+                if (x >= dot.getX() && x <= dot.getX() + 50 
+                    && y >= dot.getY() && y <= dot.getY() + 50 ) {
                     return dot; // Devuelve el Dot si se encuentra dentro del rango
                 }
                 current = current.getNext();
@@ -319,7 +356,6 @@ public class Tablero {
         }
     }
 
-
     class Square {
         private Dot upperLeft;
         private Dot upperRight;
@@ -350,7 +386,54 @@ public class Tablero {
         }
     }
 
+// Después de la clase Square
+class ClientRunner extends Thread {
+    private Socket socket;
+    private DotPanel panel;
+
+
+
+    public void run() {
+        try {
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+
+            while (true) {
+                String MS = in.readUTF();
+                Msentrada(MS);
+            }
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void Msentrada(String MS) {
+        try {
+            JSONObject ObjJason = new JSONObject(MS);
+            int x1 = ObjJason.getInt("x1");
+            int y1 = ObjJason.getInt("y1");
+            int x2 = ObjJason.getInt("x2");
+            int y2 = ObjJason.getInt("y2");
+
+            SwingUtilities.invokeLater(() -> {
+                panel.Conect2(x1, y1, x2, y2);
+            });
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+    public ClientRunner(DotPanel panel) {
+        this.panel = panel;
+        try {
+            this.socket = new Socket("localhost", 9527);
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new Tablero());
     }
 }
+
+
