@@ -19,8 +19,8 @@ while True:
         # Verifica si el botón del joystick está presionado
         if button_state == 1:
             # Invierte la dirección vertical del cursor y ajusta los valores para controlar el cursor de manera más suave
-            x_value = (x_value - 512) // 10
-            y_value = (y_value - 512) // 10
+            x_value = (x_value - 512) // 40  # Cambiado a 50 para un movimiento más lento
+            y_value = (y_value - 512) // 40  # Cambiado a 50 para un movimiento más lento
             y_value = -y_value  # Invertir la dirección vertical
             
             # Mueve el cursor en función de los valores del joystick
