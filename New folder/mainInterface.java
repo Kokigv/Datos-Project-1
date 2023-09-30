@@ -5,6 +5,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+/**
+ * La clase mainInterface es la clase principal que contiene el método principal (main) del programa.
+ * Se utiliza para iniciar la aplicación y crear una instancia de la clase Tablero, que representa
+ * el juego de Dots and Boxes con una interfaz gráfica de usuario implementada en Swing.
+ */
 public class mainInterface {
 
     private JFrame mainScreen;

@@ -14,11 +14,9 @@ import org.json.JSONException;
  * La clase Tablero representa un juego de Dots and Boxes con una interfaz gráfica
  * de usuario implementada en Swing. Permite a los jugadores hacer clic en puntos para
  * crear líneas y formar cuadrados.
- *
  * La clase contiene una clase interna llamada DotPanel que extiende JPanel y se utiliza
  * para representar gráficamente el juego. También utiliza clases como LinkedList, Dot,
  * Line y Square para administrar y representar los elementos del juego.
- *
  * El juego se puede jugar en modo local o en modo remoto, donde los movimientos se
  * envían a través de sockets a otro jugador.
  */
@@ -35,9 +33,9 @@ public class Tablero {
 
 
  /**
-     * Constructor de la clase Tablero. Inicializa la ventana de juego y crea
-     * una cuadrícula de puntos en la interfaz.
-     */
+  * Constructor de la clase Tablero. Inicializa la ventana de juego y crea
+  * una cuadrícula de puntos en la interfaz.
+  */
     Tablero() {
         window = new JFrame("Dots and Boxes");
         window.setSize(1000, 1000);
@@ -68,7 +66,7 @@ public class Tablero {
     ClientRunner.start();
     
     }
-
+    
     /**
      * Clase interna DotPanel que extiende JPanel y se utiliza para representar
      * gráficamente el juego de Dots and Boxes.
@@ -76,7 +74,7 @@ public class Tablero {
     class DotPanel extends JPanel {
         private LinkedList dotList;
         private Dot dotSeleccionado1;
-    
+
         /**
          * Constructor de la clase DotPanel que recibe la lista de puntos como argumento.
          * Configura el panel y agrega un MouseListener para manejar los clics de los jugadores.
@@ -100,6 +98,7 @@ public class Tablero {
                                 dotSeleccionado1 = null;
                                 if (isLocalAction) {
                                     detectSquares(); 
+                                    
                                 }
                                 repaint(); 
                             } else {
@@ -231,21 +230,20 @@ public class Tablero {
             }
         }
         
+
+     
         /**
-         * Método para enviar información sobre un movimiento a través de sockets.
+         * Método para enviar información sobre un movimiento a través de sockets (cuadrados).
          */
-private void Msenvio(Dot p1, Dot p2) {
-    try {
+        private void Msenvio(Dot p1, Dot p2) {
+        try {
         JSONObject ObjJason = new JSONObject();
         ObjJason.put("x1", p1.getX());
         ObjJason.put("y1", p1.getY());
         ObjJason.put("x2", p2.getX());
         ObjJason.put("y2", p2.getY());
 
-        /**
-         * Método para detectar cuadrados en el juego y enviar la información al server.
-         */
-        dotPanel.detectSquares(); 
+        dotPanel.detectSquares();
         Node current = detectedSquares.getHead();
         if (current != null) {
             Square square = (Square) current.getData();
@@ -265,9 +263,9 @@ private void Msenvio(Dot p1, Dot p2) {
         e.printStackTrace();
     }
 }       
-        /**
-         * Método para pintar lineas y los dots.
-         */
+/**
+ * Método para pintar lineas y los dots.
+ */
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -327,7 +325,8 @@ private void Msenvio(Dot p1, Dot p2) {
         }
     }
 
-     /**
+
+    /**
      * Clase Node que representa un nodo en una lista enlazada.
      */
     class Node {
