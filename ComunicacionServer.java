@@ -55,66 +55,7 @@ class ClienteHandler extends Thread {
     }
 }
 
-class Queue<T> {
-    private Nodo<T> head;
-    private Nodo<T> rear; // Necesitamos un nodo final para encolar de manera eficiente
 
-    public Queue() {
-        this.head = null;
-        this.rear = null;
-    }
-
-    // Encolar un nuevo elemento al final
-    public void add (T data) {
-        Nodo<T> newNode = new Nodo<>(data);
-        if (head == null) {
-            head = newNode;
-            rear = newNode;
-            return;
-        }
-
-        rear.next = newNode;
-        rear = newNode;
-    }
-
-    // Desencolar el elemento del inicio
-    public T delet() {
-        if (head == null) {
-            return null; // La cola está vacía
-        }
-
-        T data = head.data;
-        head = head.next;
-        if (head == null) {
-            rear = null; // Si desencolamos el último elemento, también restablecemos la cola
-        }
-        return data;
-    }
-
-    // Ver el elemento del frente sin desencolar
-    public T enseñar() {
-        if (head == null) {
-            return null; // La cola está vacía
-        }
-        return head.data;
-    }
-
-    // Verificar si la cola está vacía
-    public boolean isEmpty() {
-        return head == null;
-    }
-
-    // Obtener todos los datos como una lista para facilitar el manejo
-    public List<T> end() {
-        List<T> list = new ArrayList<>();
-        Nodo<T> current = head;
-        while (current != null) {
-            list.add(current.data);
-            current = current.next;
-        }
-        return list;
-    }
-}
 
 public class ComunicacionServer {
     private JTextArea textoPanel;
