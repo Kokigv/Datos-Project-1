@@ -8,6 +8,20 @@ import java.io.DataOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import org.json.JSONException;
+
+
+/**
+ * La clase Tablero representa un juego de Dots and Boxes con una interfaz gráfica
+ * de usuario implementada en Swing. Permite a los jugadores hacer clic en puntos para
+ * crear líneas y formar cuadrados.
+ *
+ * La clase contiene una clase interna llamada DotPanel que extiende JPanel y se utiliza
+ * para representar gráficamente el juego. También utiliza clases como LinkedList, Dot,
+ * Line y Square para administrar y representar los elementos del juego.
+ *
+ * El juego se puede jugar en modo local o en modo remoto, donde los movimientos se
+ * envían a través de sockets a otro jugador.
+ */
 public class Tablero {
 
     JFrame window;
@@ -18,38 +32,12 @@ public class Tablero {
     LinkedList detectedSquares;
     private boolean isLocalAction = true;
 
-// Dentro de la clase Tablero
-private void Msenvio(Dot p1, Dot p2) {
-    try {
-        JSONObject ObjJason = new JSONObject();
-        ObjJason.put("x1", p1.getX());
-        ObjJason.put("y1", p1.getY());
-        ObjJason.put("x2", p2.getX());
-        ObjJason.put("y2", p2.getY());
-
-        // Verificar si se completó un cuadrado
-        dotPanel.detectSquares(); 
-        Node current = detectedSquares.getHead();
-        if (current != null) {
-            Square square = (Square) current.getData();
-            ObjJason.put("square", true);
-            ObjJason.put("upperLeftX", square.getUpperLeft().getX());
-            ObjJason.put("upperLeftY", square.getUpperLeft().getY());
-            // Añade las demás esquinas del cuadrado
-        }
-
-        Socket socketclient = new Socket("localhost", 9527);
-        DataOutputStream dos = new DataOutputStream(socketclient.getOutputStream());
-        dos.writeUTF(ObjJason.toString());
-        dos.flush();
-        dos.close();
-        socketclient.close();
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-}
 
 
+ /**
+     * Constructor de la clase Tablero. Inicializa la ventana de juego y crea
+     * una cuadrícula de puntos en la interfaz.
+     */
     Tablero() {
         window = new JFrame("Dots and Boxes");
         window.setSize(1000, 1000);
@@ -68,21 +56,31 @@ private void Msenvio(Dot p1, Dot p2) {
         window.add(dotPanel);
         window.add(dotPanel, BorderLayout.CENTER);
 
-        for (int i = 0; i < 10; i++) { // Crea puntos 10x10
+        // Creación de puntos en la cuadrícula
+        for (int i = 0; i < 10; i++) { 
             for (int j = 0; j < 10; j++) {
                 Dot newDot = new Dot(i * 100, j * 100);
                 dotList.insertFirst(newDot);
             }
         }
+    // Iniciar un hilo para la comunicación remota
     ClientRunner ClientRunner = new ClientRunner(dotPanel);
     ClientRunner.start();
     
     }
 
+    /**
+     * Clase interna DotPanel que extiende JPanel y se utiliza para representar
+     * gráficamente el juego de Dots and Boxes.
+     */
     class DotPanel extends JPanel {
         private LinkedList dotList;
         private Dot dotSeleccionado1;
     
+        /**
+         * Constructor de la clase DotPanel que recibe la lista de puntos como argumento.
+         * Configura el panel y agrega un MouseListener para manejar los clics de los jugadores.
+         */
         public DotPanel(LinkedList dotList) {
             this.dotList = dotList;
             addMouseListener(new MouseAdapter() {
@@ -232,7 +230,44 @@ private void Msenvio(Dot p1, Dot p2) {
                 repaint();
             }
         }
-    
+        
+        /**
+         * Método para enviar información sobre un movimiento a través de sockets.
+         */
+private void Msenvio(Dot p1, Dot p2) {
+    try {
+        JSONObject ObjJason = new JSONObject();
+        ObjJason.put("x1", p1.getX());
+        ObjJason.put("y1", p1.getY());
+        ObjJason.put("x2", p2.getX());
+        ObjJason.put("y2", p2.getY());
+
+        /**
+         * Método para detectar cuadrados en el juego y enviar la información al server.
+         */
+        dotPanel.detectSquares(); 
+        Node current = detectedSquares.getHead();
+        if (current != null) {
+            Square square = (Square) current.getData();
+            ObjJason.put("square", true);
+            ObjJason.put("upperLeftX", square.getUpperLeft().getX());
+            ObjJason.put("upperLeftY", square.getUpperLeft().getY());
+            // Añade las demás esquinas del cuadrado
+        }
+
+        Socket socketclient = new Socket("localhost", 9527);
+        DataOutputStream dos = new DataOutputStream(socketclient.getOutputStream());
+        dos.writeUTF(ObjJason.toString());
+        dos.flush();
+        dos.close();
+        socketclient.close();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}       
+        /**
+         * Método para pintar lineas y los dots.
+         */
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
@@ -267,10 +302,13 @@ private void Msenvio(Dot p1, Dot p2) {
             lineNode = lineNode.getNext();
         }
 
+        
         }
     }
 
-    
+    /**
+     * Clase Dot que representa un punto en el juego.
+     */
     class Dot {
         private int x;
         private int y;
@@ -289,6 +327,9 @@ private void Msenvio(Dot p1, Dot p2) {
         }
     }
 
+     /**
+     * Clase Node que representa un nodo en una lista enlazada.
+     */
     class Node {
         private Object data;
         private Node next;
@@ -312,6 +353,9 @@ private void Msenvio(Dot p1, Dot p2) {
     
     }
 
+    /**
+     * Clase LinkedList que representa una lista enlazada.
+     */
     class LinkedList {
         private Node head;
         private int size;
@@ -352,6 +396,9 @@ private void Msenvio(Dot p1, Dot p2) {
     
     }
 
+    /**
+     * Clase Line que representa una línea en el juego.
+     */
     class Line {
         private Dot dot1;
         private Dot dot2;
@@ -385,7 +432,10 @@ private void Msenvio(Dot p1, Dot p2) {
             return dot2.getY();
         }
     }
-
+    
+    /**
+     * Clase Square que representa un cuadrado formado en el juego.
+     */
     class Square {
         private Dot upperLeft;
         private Dot upperRight;
@@ -416,7 +466,9 @@ private void Msenvio(Dot p1, Dot p2) {
         }
     }
 
-// Después de la clase Square
+/**
+     * Clase ClientRunner que se encarga de la comunicación remota a través de sockets.
+     */
 class ClientRunner extends Thread {
     private Socket socket;
     private DotPanel panel;
