@@ -16,6 +16,8 @@ public class Tablero {
     LinkedList squareList;
     DotPanel dotPanel;
     LinkedList detectedSquares;
+    private boolean isLocalAction = true;
+
 // Dentro de la clase Tablero
 private void Msenvio(Dot p1, Dot p2) {
     try {
@@ -24,6 +26,17 @@ private void Msenvio(Dot p1, Dot p2) {
         ObjJason.put("y1", p1.getY());
         ObjJason.put("x2", p2.getX());
         ObjJason.put("y2", p2.getY());
+
+        // Verificar si se completó un cuadrado
+        dotPanel.detectSquares(); 
+        Node current = detectedSquares.getHead();
+        if (current != null) {
+            Square square = (Square) current.getData();
+            ObjJason.put("square", true);
+            ObjJason.put("upperLeftX", square.getUpperLeft().getX());
+            ObjJason.put("upperLeftY", square.getUpperLeft().getY());
+            // Añade las demás esquinas del cuadrado
+        }
 
         Socket socketclient = new Socket("localhost", 9527);
         DataOutputStream dos = new DataOutputStream(socketclient.getOutputStream());
@@ -37,8 +50,6 @@ private void Msenvio(Dot p1, Dot p2) {
 }
 
 
-
-    
     Tablero() {
         window = new JFrame("Dots and Boxes");
         window.setSize(1000, 1000);
@@ -86,9 +97,12 @@ private void Msenvio(Dot p1, Dot p2) {
                             if (Adjacent(dotSeleccionado1, clickedDot) && !lineExists(dotSeleccionado1, clickedDot)) {
                                 Line line = new Line(dotSeleccionado1, clickedDot);
                                 lineList.insertFirst(line); 
-                                Msenvio(dotSeleccionado1, clickedDot);  // Llamada al método
+                                isLocalAction = true; 
+                                Msenvio(dotSeleccionado1, clickedDot);  
                                 dotSeleccionado1 = null;
-                                checkForSquares();
+                                if (isLocalAction) {
+                                    detectSquares(); 
+                                }
                                 repaint(); 
                             } else {
                                 System.out.println("No se puede agregar la línea");
@@ -122,7 +136,7 @@ private void Msenvio(Dot p1, Dot p2) {
             
         }
 
-        private void checkForSquares() {
+        private void detectSquares() {
             Node current = dotList.getHead();
         
             while (current != null) {
@@ -136,28 +150,44 @@ private void Msenvio(Dot p1, Dot p2) {
                 if (rightDot != null && bottomDot != null && bottomRightDot != null) {
                     if (lineExists(dot, rightDot) && lineExists(rightDot, bottomRightDot) &&
                         lineExists(bottomRightDot, bottomDot) && lineExists(bottomDot, dot)) {
-
+        
                         Square square = new Square(dot, rightDot, bottomDot, bottomRightDot);
-
+        
                         if (!squareExists(square)) {
                             squareList.insertFirst(square);
                             detectedSquares.insertFirst(square);
-                            System.out.println(squareList.size());
-                            System.out.println("Cuadrado Hecho");
+                            drawSquare(dot);
+                            System.out.println("Tamaño de detectedSquares: " + detectedSquares.size());
+                           
                         }
                     }
                 }
                 current = current.getNext();
             }
         }
-        public void Conect2(int x1, int y1, int x2, int y2) {
-            // Aquí se debe conectar los puntos basados en las coordenadas. 
-            // Por ahora, asumiré que simplemente deseas agregar una línea entre ellos.
-            Dot dot1 = new Dot(x1, y1);
-            Dot dot2 = new Dot(x2, y2);
-            lineList.insertFirst(new Line(dot1, dot2));
+        
+        private void drawSquare(Dot upperLeft) {
+            int x1 = upperLeft.getX();
+            int y1 = upperLeft.getY();
+            // Aquí puedes agregar el código para dibujar el cuadrado si es necesario.
             repaint();
         }
+        public void Conect2(int x1, int y1, int x2, int y2) {
+            Dot dot1 = dotList.findDot(x1, y1);
+            Dot dot2 = dotList.findDot(x2, y2);
+        
+            if (dot1 != null && dot2 != null) {
+                lineList.insertFirst(new Line(dot1, dot2));
+        
+                // Detecta cuadrados solo si es una acción local.
+                if (isLocalAction) {
+                    dotPanel.detectSquares(); 
+                }
+        
+                repaint();
+            }
+        }
+        
 
         private boolean squareExists(Square square) {
             Node current = detectedSquares.getHead();
@@ -192,7 +222,7 @@ private void Msenvio(Dot p1, Dot p2) {
                         Line line = new Line(dotSeleccionado1, clickedDot);
                         dotList.insertFirst(line);
                         dotSeleccionado1 = null;
-                        checkForSquares();
+                        detectSquares();
                        
                     } else {
                         System.out.println("No se puede agregar la línea");
@@ -222,7 +252,7 @@ private void Msenvio(Dot p1, Dot p2) {
                 Dot dot = (Dot) current.getData();
                 int x = dot.getX();
                 int y = dot.getY();
-                g.fillOval(x, y, 5, 5); 
+                g.fillOval(x, y, 8, 8); 
                 current = current.getNext();
             }
 
@@ -311,8 +341,8 @@ private void Msenvio(Dot p1, Dot p2) {
             while (current != null) {
                 Dot dot = (Dot) current.getData();
                 // Comprueba si las coordenadas (x, y) están dentro del rango del Dot
-                if (x >= dot.getX() && x <= dot.getX() + 50 
-                    && y >= dot.getY() && y <= dot.getY() + 50 ) {
+                if (x >= dot.getX() && x <= dot.getX() + 200 
+                    && y >= dot.getY() && y <= dot.getY() + 200 ) {
                     return dot; // Devuelve el Dot si se encuentra dentro del rango
                 }
                 current = current.getNext();
@@ -400,6 +430,7 @@ class ClientRunner extends Thread {
             while (true) {
                 String MS = in.readUTF();
                 Msentrada(MS);
+                
             }
         } catch(IOException e) {
             e.printStackTrace();
@@ -413,14 +444,20 @@ class ClientRunner extends Thread {
             int y1 = ObjJason.getInt("y1");
             int x2 = ObjJason.getInt("x2");
             int y2 = ObjJason.getInt("y2");
-
+    
+            isLocalAction = false;
+    
             SwingUtilities.invokeLater(() -> {
                 panel.Conect2(x1, y1, x2, y2);
             });
         } catch (JSONException e) {
             e.printStackTrace();
+        } finally {
+            isLocalAction = true;  // Volver a configurar a true al final.
         }
     }
+    
+    
     public ClientRunner(DotPanel panel) {
         this.panel = panel;
         try {

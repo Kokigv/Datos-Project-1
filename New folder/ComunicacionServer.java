@@ -65,6 +65,7 @@ public class ComunicacionServer {
         ventana.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         ventana.setSize(400, 400);
         ventana.setLayout(null);
+        ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panelServer = new JPanel();
         panelServer.setLayout(null);
@@ -78,16 +79,6 @@ public class ComunicacionServer {
         textoPanel.setBounds(100, 100, 400, 400);
         textoPanel.setEditable(false);
         panelServer.add(textoPanel);
-
-        ventana.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent ev) {
-                int respuesta = JOptionPane.showConfirmDialog(null, "¿Seguro que deseas salir?", "Confirmación", JOptionPane.YES_NO_OPTION);
-                if (respuesta == JOptionPane.YES_OPTION) {
-                    System.exit(0);
-                }
-            }
-        });
 
         ventana.setVisible(true);
     }
@@ -128,6 +119,7 @@ public class ComunicacionServer {
     public synchronized void enviarATodos(String msg) {
         for(ClienteHandler gestor : listaClientes) {
             gestor.enviarMensaje(msg);
+            
         }
     }
 }
